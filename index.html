@@ -3,11 +3,17 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#070916" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="NOH Song Search" />
     <title>NOH Song Search</title>
+    <link rel="manifest" href="./public/manifest.json" />
+    <link rel="apple-touch-icon" href="./public/apple-touch-icon.png" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
-      href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=Manrope:wght@400;500;700&display=swap"
+      href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700&family=Share+Tech+Mono&display=swap"
       rel="stylesheet"
     />
     <link rel="stylesheet" href="./styles.css" />
@@ -15,10 +21,18 @@
   <body>
     <main class="page">
       <section class="hero">
-        <p class="eyebrow">NOH Archive</p>
-        <h1>The Not Often Heard Song Repository.</h1>
+        <div class="hero-bar">
+          <div>
+            <p class="eyebrow">Show Archive</p>
+            <h1>Not Often Heard Song Repository</h1>
+          </div>
+          <div class="brand-lockup" aria-label="NOH branding area">
+            <img class="brand-logo" src="./public/logo.png" alt="NOH logo" />
+          </div>
+        </div>
         <p class="intro">
-         Search by artist, song, or plan name.
+          Search by artist, song, or
+          plan name.
         </p>
       </section>
 
