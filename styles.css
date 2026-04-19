@@ -224,11 +224,11 @@ tbody tr:hover {
   }
 
   .brand-logo {
-    width: clamp(64px, 22vw, 84px);
+    width: clamp(76px, 26vw, 96px);
   }
 
   .hero h1 {
-    font-size: clamp(1.7rem, 8vw, 2.4rem);
+    font-size: clamp(1.95rem, 8.8vw, 2.7rem);
     max-width: none;
   }
 
