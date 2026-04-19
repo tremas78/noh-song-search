@@ -179,6 +179,11 @@ table {
   border-collapse: collapse;
 }
 
+th,
+td {
+  overflow-wrap: anywhere;
+}
+
 thead th {
   position: sticky;
   top: 0;
@@ -240,6 +245,31 @@ tbody tr:hover {
 
   thead th,
   tbody td {
-    padding: 0.8rem 0.75rem;
+    padding: 0.75rem 0.5rem;
+    font-size: 0.82rem;
+  }
+
+  table {
+    table-layout: fixed;
+  }
+
+  thead th:nth-child(1),
+  tbody td:nth-child(1) {
+    width: 30%;
+  }
+
+  thead th:nth-child(2),
+  tbody td:nth-child(2) {
+    width: 28%;
+  }
+
+  thead th:nth-child(3),
+  tbody td:nth-child(3) {
+    width: 24%;
+  }
+
+  thead th:nth-child(4),
+  tbody td:nth-child(4) {
+    width: 18%;
   }
 }
