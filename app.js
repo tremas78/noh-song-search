@@ -6,11 +6,7 @@ const state = {
   sort: { col: "last_updated", dir: "desc" },
 };
 
-const searchInput = document.querySelector("#searchInput");
-const clearButton = document.querySelector("#clearButton");
-const resultsBody = document.querySelector("#resultsBody");
-const statusText = document.querySelector("#statusText");
-const emptyStateTemplate = document.querySelector("#emptyStateTemplate");
+let searchInput, clearButton, resultsBody, statusText, emptyStateTemplate;
 
 async function loadData() {
   try {
@@ -164,24 +160,32 @@ function escapeHtml(value) {
     .replaceAll("'", "&#39;");
 }
 
-document.querySelectorAll("thead th[data-col]").forEach((th) => {
-  th.addEventListener("click", () => applySort(th.dataset.col));
-  th.addEventListener("keydown", (e) => {
-    if (e.key === "Enter" || e.key === " ") {
-      e.preventDefault();
-      applySort(th.dataset.col);
-    }
+document.addEventListener("DOMContentLoaded", () => {
+  searchInput = document.querySelector("#searchInput");
+  clearButton = document.querySelector("#clearButton");
+  resultsBody = document.querySelector("#resultsBody");
+  statusText = document.querySelector("#statusText");
+  emptyStateTemplate = document.querySelector("#emptyStateTemplate");
+
+  document.querySelectorAll("thead th[data-col]").forEach((th) => {
+    th.addEventListener("click", () => applySort(th.dataset.col));
+    th.addEventListener("keydown", (e) => {
+      if (e.key === "Enter" || e.key === " ") {
+        e.preventDefault();
+        applySort(th.dataset.col);
+      }
+    });
   });
-});
 
-searchInput.addEventListener("input", (event) => {
-  filterRows(event.target.value);
-});
+  searchInput.addEventListener("input", (event) => {
+    filterRows(event.target.value);
+  });
 
-clearButton.addEventListener("click", () => {
-  searchInput.value = "";
-  filterRows("");
-  searchInput.focus();
-});
+  clearButton.addEventListener("click", () => {
+    searchInput.value = "";
+    filterRows("");
+    searchInput.focus();
+  });
 
-loadData();
+  loadData();
+});

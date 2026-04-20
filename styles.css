@@ -75,6 +75,14 @@ body {
     0 0 28px rgba(255, 79, 216, 0.18);
 }
 
+.hero-tagline {
+  margin: 0 0 4px;
+  font-size: 0.75rem;
+  font-style: italic;
+  color: var(--muted);
+  line-height: 1;
+}
+
 .intro {
   max-width: 45rem;
   margin: 1rem 0 0;
