@@ -3,10 +3,13 @@ const DATA_URL = "./songs.json";
 const state = {
   rows: [],
   filteredRows: [],
-  sort: { col: "last_updated", dir: "desc" },
 };
 
-let searchInput, clearButton, resultsBody, statusText, emptyStateTemplate;
+const searchInput = document.querySelector("#searchInput");
+const clearButton = document.querySelector("#clearButton");
+const resultsBody = document.querySelector("#resultsBody");
+const statusText = document.querySelector("#statusText");
+const emptyStateTemplate = document.querySelector("#emptyStateTemplate");
 
 async function loadData() {
   try {
@@ -19,7 +22,7 @@ async function loadData() {
     const data = await response.json();
     state.rows = data;
     state.filteredRows = data;
-    renderRows(sortRows(data));
+    renderRows(data);
     updateStatus();
   } catch (error) {
     resultsBody.innerHTML = "";
@@ -48,52 +51,12 @@ function formatDate(value) {
   }).format(date);
 }
 
-function sortRows(rows) {
-  const { col, dir } = state.sort;
-  return [...rows].sort((a, b) => {
-    let aVal = a[col] ?? "";
-    let bVal = b[col] ?? "";
-
-    if (col === "last_updated") {
-      aVal = new Date(aVal).getTime() || 0;
-      bVal = new Date(bVal).getTime() || 0;
-      return dir === "asc" ? aVal - bVal : bVal - aVal;
-    }
-
-    aVal = normalize(aVal);
-    bVal = normalize(bVal);
-    if (aVal < bVal) return dir === "asc" ? -1 : 1;
-    if (aVal > bVal) return dir === "asc" ? 1 : -1;
-    return 0;
-  });
-}
-
-function applySort(col) {
-  if (state.sort.col === col) {
-    state.sort.dir = state.sort.dir === "asc" ? "desc" : "asc";
-  } else {
-    state.sort.col = col;
-    state.sort.dir = col === "last_updated" ? "desc" : "asc";
-  }
-
-  // Update aria-sort on all headers
-  document.querySelectorAll("thead th[data-col]").forEach((th) => {
-    if (th.dataset.col === col) {
-      th.setAttribute("aria-sort", state.sort.dir === "asc" ? "ascending" : "descending");
-    } else {
-      th.setAttribute("aria-sort", "none");
-    }
-  });
-
-  renderRows(sortRows(state.filteredRows));
-}
-
-
+function filterRows(query) {
   const normalizedQuery = normalize(query);
 
   if (!normalizedQuery) {
     state.filteredRows = state.rows;
-    renderRows(sortRows(state.filteredRows));
+    renderRows(state.filteredRows);
     updateStatus();
     return;
   }
@@ -110,7 +73,7 @@ function applySort(col) {
     return haystack.includes(normalizedQuery);
   });
 
-  renderRows(sortRows(state.filteredRows));
+  renderRows(state.filteredRows);
   updateStatus(normalizedQuery);
 }
 
@@ -160,32 +123,14 @@ function escapeHtml(value) {
     .replaceAll("'", "&#39;");
 }
 
-document.addEventListener("DOMContentLoaded", () => {
-  searchInput = document.querySelector("#searchInput");
-  clearButton = document.querySelector("#clearButton");
-  resultsBody = document.querySelector("#resultsBody");
-  statusText = document.querySelector("#statusText");
-  emptyStateTemplate = document.querySelector("#emptyStateTemplate");
-
-  document.querySelectorAll("thead th[data-col]").forEach((th) => {
-    th.addEventListener("click", () => applySort(th.dataset.col));
-    th.addEventListener("keydown", (e) => {
-      if (e.key === "Enter" || e.key === " ") {
-        e.preventDefault();
-        applySort(th.dataset.col);
-      }
-    });
-  });
-
-  searchInput.addEventListener("input", (event) => {
-    filterRows(event.target.value);
-  });
-
-  clearButton.addEventListener("click", () => {
-    searchInput.value = "";
-    filterRows("");
-    searchInput.focus();
-  });
-
-  loadData();
+searchInput.addEventListener("input", (event) => {
+  filterRows(event.target.value);
 });
+
+clearButton.addEventListener("click", () => {
+  searchInput.value = "";
+  filterRows("");
+  searchInput.focus();
+});
+
+loadData();

@@ -192,36 +192,6 @@ thead th {
   letter-spacing: 0.08em;
   color: var(--muted);
   background: rgba(255, 255, 255, 0.03);
-  cursor: pointer;
-  user-select: none;
-  white-space: nowrap;
-  transition: color 150ms ease;
-}
-
-thead th:hover {
-  color: var(--ink);
-}
-
-thead th[aria-sort="ascending"],
-thead th[aria-sort="descending"] {
-  color: var(--accent);
-}
-
-.sort-icon::after {
-  content: "↕";
-  margin-left: 0.35em;
-  opacity: 0.35;
-  font-style: normal;
-}
-
-th[aria-sort="ascending"] .sort-icon::after {
-  content: "↑";
-  opacity: 1;
-}
-
-th[aria-sort="descending"] .sort-icon::after {
-  content: "↓";
-  opacity: 1;
 }
 
 tbody td {
