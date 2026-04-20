@@ -3,6 +3,7 @@ const DATA_URL = "./songs.json";
 const state = {
   rows: [],
   filteredRows: [],
+  sort: { col: "last_updated", dir: "desc" },
 };
 
 const searchInput = document.querySelector("#searchInput");
@@ -22,7 +23,7 @@ async function loadData() {
     const data = await response.json();
     state.rows = data;
     state.filteredRows = data;
-    renderRows(data);
+    renderRows(sortRows(data));
     updateStatus();
   } catch (error) {
     resultsBody.innerHTML = "";
@@ -51,12 +52,52 @@ function formatDate(value) {
   }).format(date);
 }
 
-function filterRows(query) {
+function sortRows(rows) {
+  const { col, dir } = state.sort;
+  return [...rows].sort((a, b) => {
+    let aVal = a[col] ?? "";
+    let bVal = b[col] ?? "";
+
+    if (col === "last_updated") {
+      aVal = new Date(aVal).getTime() || 0;
+      bVal = new Date(bVal).getTime() || 0;
+      return dir === "asc" ? aVal - bVal : bVal - aVal;
+    }
+
+    aVal = normalize(aVal);
+    bVal = normalize(bVal);
+    if (aVal < bVal) return dir === "asc" ? -1 : 1;
+    if (aVal > bVal) return dir === "asc" ? 1 : -1;
+    return 0;
+  });
+}
+
+function applySort(col) {
+  if (state.sort.col === col) {
+    state.sort.dir = state.sort.dir === "asc" ? "desc" : "asc";
+  } else {
+    state.sort.col = col;
+    state.sort.dir = col === "last_updated" ? "desc" : "asc";
+  }
+
+  // Update aria-sort on all headers
+  document.querySelectorAll("thead th[data-col]").forEach((th) => {
+    if (th.dataset.col === col) {
+      th.setAttribute("aria-sort", state.sort.dir === "asc" ? "ascending" : "descending");
+    } else {
+      th.setAttribute("aria-sort", "none");
+    }
+  });
+
+  renderRows(sortRows(state.filteredRows));
+}
+
+
   const normalizedQuery = normalize(query);
 
   if (!normalizedQuery) {
     state.filteredRows = state.rows;
-    renderRows(state.filteredRows);
+    renderRows(sortRows(state.filteredRows));
     updateStatus();
     return;
   }
@@ -73,7 +114,7 @@ function filterRows(query) {
     return haystack.includes(normalizedQuery);
   });
 
-  renderRows(state.filteredRows);
+  renderRows(sortRows(state.filteredRows));
   updateStatus(normalizedQuery);
 }
 
@@ -122,6 +163,16 @@ function escapeHtml(value) {
     .replaceAll('"', "&quot;")
     .replaceAll("'", "&#39;");
 }
+
+document.querySelectorAll("thead th[data-col]").forEach((th) => {
+  th.addEventListener("click", () => applySort(th.dataset.col));
+  th.addEventListener("keydown", (e) => {
+    if (e.key === "Enter" || e.key === " ") {
+      e.preventDefault();
+      applySort(th.dataset.col);
+    }
+  });
+});
 
 searchInput.addEventListener("input", (event) => {
   filterRows(event.target.value);
