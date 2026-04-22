@@ -1,4 +1,8 @@
 const DATA_URL = "./songs.json";
+const textCollator = new Intl.Collator("en", {
+  numeric: true,
+  sensitivity: "base",
+});
 
 const state = {
   rows: [],
@@ -26,8 +30,8 @@ async function loadData() {
     }
 
     const data = await response.json();
-    state.rows = data;
-    state.filteredRows = data;
+    state.rows = data.map((row, index) => ({ ...row, __index: index }));
+    state.filteredRows = state.rows;
     renderRows(state.filteredRows);
     updateSortButtons();
     updateStatus();
@@ -69,24 +73,45 @@ function getComparableValue(row, key) {
   return normalize(value);
 }
 
+function compareRows(left, right, key, direction) {
+  const multiplier = direction === "asc" ? 1 : -1;
+  const leftValue = getComparableValue(left, key);
+  const rightValue = getComparableValue(right, key);
+
+  let result = 0;
+
+  if (key === "last_updated") {
+    result = leftValue - rightValue;
+  } else {
+    result = textCollator.compare(leftValue, rightValue);
+  }
+
+  if (result !== 0) {
+    return result * multiplier;
+  }
+
+  const tieBreakKeys = ["artist", "song", "plan_name", "last_updated"].filter((candidate) => candidate !== key);
+
+  for (const tieBreakKey of tieBreakKeys) {
+    const tieLeft = getComparableValue(left, tieBreakKey);
+    const tieRight = getComparableValue(right, tieBreakKey);
+    const tieResult =
+      tieBreakKey === "last_updated"
+        ? tieLeft - tieRight
+        : textCollator.compare(tieLeft, tieRight);
+
+    if (tieResult !== 0) {
+      return tieResult;
+    }
+  }
+
+  return (left.__index || 0) - (right.__index || 0);
+}
+
 function sortRows(rows) {
   const { key, direction } = state.sort;
-  const multiplier = direction === "asc" ? 1 : -1;
 
-  return [...rows].sort((left, right) => {
-    const leftValue = getComparableValue(left, key);
-    const rightValue = getComparableValue(right, key);
-
-    if (leftValue < rightValue) {
-      return -1 * multiplier;
-    }
-
-    if (leftValue > rightValue) {
-      return 1 * multiplier;
-    }
-
-    return 0;
-  });
+  return [...rows].sort((left, right) => compareRows(left, right, key, direction));
 }
 
 function applyCurrentView(query = "") {
@@ -153,7 +178,9 @@ function updateSortButtons() {
     const ariaSort = direction === "asc" ? "ascending" : direction === "desc" ? "descending" : "none";
 
     button.dataset.direction = direction;
-    headerCell?.setAttribute("aria-sort", ariaSort);
+    if (headerCell) {
+      headerCell.setAttribute("aria-sort", ariaSort);
+    }
     button.setAttribute(
       "aria-label",
       `Sort by ${button.textContent.trim()}${isActive ? ` (${direction === "asc" ? "ascending" : "descending"})` : ""}`
@@ -175,16 +202,19 @@ function updateStatus(query = "") {
 
 function updateBackToTopVisibility() {
   const isVisible = window.scrollY > 320;
-  backToTopButton?.classList.toggle("is-visible", isVisible);
+
+  if (backToTopButton) {
+    backToTopButton.classList.toggle("is-visible", isVisible);
+  }
 }
 
 function escapeHtml(value) {
   return String(value)
-    .replaceAll("&", "&amp;")
-    .replaceAll("<", "&lt;")
-    .replaceAll(">", "&gt;")
-    .replaceAll('"', "&quot;")
-    .replaceAll("'", "&#39;");
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
 }
 
 searchInput.addEventListener("input", (event) => {
@@ -197,12 +227,14 @@ clearButton.addEventListener("click", () => {
   searchInput.focus();
 });
 
-backToTopButton?.addEventListener("click", () => {
-  window.scrollTo({
-    top: 0,
-    behavior: "smooth",
+if (backToTopButton) {
+  backToTopButton.addEventListener("click", () => {
+    window.scrollTo({
+      top: 0,
+      behavior: "smooth",
+    });
   });
-});
+}
 
 sortButtons.forEach((button) => {
   button.addEventListener("click", () => {
