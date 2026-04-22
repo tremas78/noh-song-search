@@ -3,6 +3,10 @@ const DATA_URL = "./songs.json";
 const state = {
   rows: [],
   filteredRows: [],
+  sort: {
+    key: "last_updated",
+    direction: "desc",
+  },
 };
 
 const searchInput = document.querySelector("#searchInput");
@@ -10,6 +14,8 @@ const clearButton = document.querySelector("#clearButton");
 const resultsBody = document.querySelector("#resultsBody");
 const statusText = document.querySelector("#statusText");
 const emptyStateTemplate = document.querySelector("#emptyStateTemplate");
+const sortButtons = document.querySelectorAll(".sort-button");
+const backToTopButton = document.querySelector("#backToTopButton");
 
 async function loadData() {
   try {
@@ -22,7 +28,8 @@ async function loadData() {
     const data = await response.json();
     state.rows = data;
     state.filteredRows = data;
-    renderRows(data);
+    renderRows(state.filteredRows);
+    updateSortButtons();
     updateStatus();
   } catch (error) {
     resultsBody.innerHTML = "";
@@ -51,13 +58,49 @@ function formatDate(value) {
   }).format(date);
 }
 
+function getComparableValue(row, key) {
+  const value = row[key];
+
+  if (key === "last_updated") {
+    const timestamp = new Date(value).getTime();
+    return Number.isNaN(timestamp) ? Number.NEGATIVE_INFINITY : timestamp;
+  }
+
+  return normalize(value);
+}
+
+function sortRows(rows) {
+  const { key, direction } = state.sort;
+  const multiplier = direction === "asc" ? 1 : -1;
+
+  return [...rows].sort((left, right) => {
+    const leftValue = getComparableValue(left, key);
+    const rightValue = getComparableValue(right, key);
+
+    if (leftValue < rightValue) {
+      return -1 * multiplier;
+    }
+
+    if (leftValue > rightValue) {
+      return 1 * multiplier;
+    }
+
+    return 0;
+  });
+}
+
+function applyCurrentView(query = "") {
+  renderRows(state.filteredRows);
+  updateSortButtons();
+  updateStatus(query);
+}
+
 function filterRows(query) {
   const normalizedQuery = normalize(query);
 
   if (!normalizedQuery) {
     state.filteredRows = state.rows;
-    renderRows(state.filteredRows);
-    updateStatus();
+    applyCurrentView();
     return;
   }
 
@@ -73,14 +116,14 @@ function filterRows(query) {
     return haystack.includes(normalizedQuery);
   });
 
-  renderRows(state.filteredRows);
-  updateStatus(normalizedQuery);
+  applyCurrentView(normalizedQuery);
 }
 
 function renderRows(rows) {
+  const sortedRows = sortRows(rows);
   resultsBody.innerHTML = "";
 
-  if (rows.length === 0) {
+  if (sortedRows.length === 0) {
     const emptyRow = emptyStateTemplate.content.firstElementChild.cloneNode(true);
     resultsBody.appendChild(emptyRow);
     return;
@@ -88,7 +131,7 @@ function renderRows(rows) {
 
   const fragment = document.createDocumentFragment();
 
-  rows.forEach((row) => {
+  sortedRows.forEach((row) => {
     const tr = document.createElement("tr");
     tr.innerHTML = `
       <td>${escapeHtml(row.artist)}</td>
@@ -102,6 +145,22 @@ function renderRows(rows) {
   resultsBody.appendChild(fragment);
 }
 
+function updateSortButtons() {
+  sortButtons.forEach((button) => {
+    const isActive = button.dataset.sortKey === state.sort.key;
+    const direction = isActive ? state.sort.direction : "none";
+    const headerCell = button.closest("th");
+    const ariaSort = direction === "asc" ? "ascending" : direction === "desc" ? "descending" : "none";
+
+    button.dataset.direction = direction;
+    headerCell?.setAttribute("aria-sort", ariaSort);
+    button.setAttribute(
+      "aria-label",
+      `Sort by ${button.textContent.trim()}${isActive ? ` (${direction === "asc" ? "ascending" : "descending"})` : ""}`
+    );
+  });
+}
+
 function updateStatus(query = "") {
   const resultCount = state.filteredRows.length;
   const totalCount = state.rows.length;
@@ -112,6 +171,11 @@ function updateStatus(query = "") {
   }
 
   statusText.textContent = `${resultCount} match${resultCount === 1 ? "" : "es"} for "${query}"`;
+}
+
+function updateBackToTopVisibility() {
+  const isVisible = window.scrollY > 320;
+  backToTopButton?.classList.toggle("is-visible", isVisible);
 }
 
 function escapeHtml(value) {
@@ -133,4 +197,29 @@ clearButton.addEventListener("click", () => {
   searchInput.focus();
 });
 
+backToTopButton?.addEventListener("click", () => {
+  window.scrollTo({
+    top: 0,
+    behavior: "smooth",
+  });
+});
+
+sortButtons.forEach((button) => {
+  button.addEventListener("click", () => {
+    const { sortKey } = button.dataset;
+
+    if (state.sort.key === sortKey) {
+      state.sort.direction = state.sort.direction === "asc" ? "desc" : "asc";
+    } else {
+      state.sort.key = sortKey;
+      state.sort.direction = sortKey === "last_updated" ? "desc" : "asc";
+    }
+
+    applyCurrentView(searchInput.value);
+  });
+});
+
+window.addEventListener("scroll", updateBackToTopVisibility, { passive: true });
+
 loadData();
+updateBackToTopVisibility();

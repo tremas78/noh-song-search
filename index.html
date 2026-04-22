@@ -53,10 +53,30 @@
           <table>
             <thead>
               <tr>
-                <th>Artist</th>
-                <th>Song</th>
-                <th>Plan Name</th>
-                <th>Date</th>
+                <th>
+                  <button class="sort-button" type="button" data-sort-key="artist" aria-label="Sort by artist">
+                    <span>Artist</span>
+                    <span class="sort-indicator" aria-hidden="true"></span>
+                  </button>
+                </th>
+                <th>
+                  <button class="sort-button" type="button" data-sort-key="song" aria-label="Sort by song">
+                    <span>Song</span>
+                    <span class="sort-indicator" aria-hidden="true"></span>
+                  </button>
+                </th>
+                <th>
+                  <button class="sort-button" type="button" data-sort-key="plan_name" aria-label="Sort by plan name">
+                    <span>Plan Name</span>
+                    <span class="sort-indicator" aria-hidden="true"></span>
+                  </button>
+                </th>
+                <th>
+                  <button class="sort-button" type="button" data-sort-key="last_updated" aria-label="Sort by date">
+                    <span>Date</span>
+                    <span class="sort-indicator" aria-hidden="true"></span>
+                  </button>
+                </th>
               </tr>
             </thead>
             <tbody id="resultsBody"></tbody>
@@ -70,6 +90,10 @@
         <td colspan="4" class="empty-state">No matching songs found.</td>
       </tr>
     </template>
+
+    <button id="backToTopButton" class="back-to-top" type="button" aria-label="Return to top">
+      ↑
+    </button>
 
     <script src="./app.js" defer></script>
   </body>

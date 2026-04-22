@@ -21,6 +21,7 @@ body {
   min-height: 100vh;
   font-family: "Share Tech Mono", monospace;
   color: var(--ink);
+  scroll-behavior: smooth;
   background:
     radial-gradient(circle at top left, rgba(121, 184, 255, 0.18), transparent 28rem),
     radial-gradient(circle at top right, rgba(69, 211, 197, 0.12), transparent 24rem),
@@ -177,7 +178,6 @@ table {
   border-collapse: collapse;
 }
 
-th,
 td {
   overflow-wrap: anywhere;
 }
@@ -185,13 +185,57 @@ td {
 thead th {
   position: sticky;
   top: 0;
+  background: rgba(255, 255, 255, 0.03);
+  white-space: nowrap;
+}
+
+.sort-button {
+  display: flex;
+  width: 100%;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.5rem;
   padding: 0.95rem 1rem;
-  text-align: left;
+  border: 0;
+  background: transparent;
+  color: var(--muted);
+  font: inherit;
   font-size: 0.85rem;
+  font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.08em;
-  color: var(--muted);
-  background: rgba(255, 255, 255, 0.03);
+  text-align: left;
+  cursor: pointer;
+  transition: color 180ms ease, background 180ms ease;
+}
+
+.sort-button > span:first-child {
+  white-space: nowrap;
+}
+
+.sort-button:hover,
+.sort-button:focus-visible {
+  color: var(--ink);
+  outline: none;
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.sort-button[data-direction="asc"],
+.sort-button[data-direction="desc"] {
+  color: var(--accent);
+}
+
+.sort-indicator {
+  width: 1ch;
+  text-align: center;
+}
+
+.sort-button[data-direction="asc"] .sort-indicator::before {
+  content: "↑";
+}
+
+.sort-button[data-direction="desc"] .sort-indicator::before {
+  content: "↓";
 }
 
 tbody td {
@@ -208,6 +252,46 @@ tbody tr:hover {
   padding: 2rem 1rem;
   text-align: center;
   color: var(--muted);
+}
+
+.back-to-top {
+  position: fixed;
+  right: 1.5rem;
+  bottom: 1.5rem;
+  z-index: 20;
+  display: grid;
+  place-items: center;
+  width: 3rem;
+  height: 3rem;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 999px;
+  background: rgba(19, 27, 43, 0.92);
+  color: var(--ink);
+  font: inherit;
+  font-size: 1.2rem;
+  box-shadow: var(--shadow);
+  cursor: pointer;
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(12px);
+  transition:
+    opacity 180ms ease,
+    transform 180ms ease,
+    border-color 180ms ease,
+    background 180ms ease;
+}
+
+.back-to-top:hover,
+.back-to-top:focus-visible {
+  outline: none;
+  border-color: var(--accent);
+  background: rgba(33, 49, 77, 0.96);
+}
+
+.back-to-top.is-visible {
+  opacity: 1;
+  pointer-events: auto;
+  transform: translateY(0);
 }
 
 @media (max-width: 720px) {
@@ -254,10 +338,23 @@ tbody tr:hover {
     width: 100%;
   }
 
-  thead th,
+  .back-to-top {
+    right: 1rem;
+    bottom: 1rem;
+    width: 2.75rem;
+    height: 2.75rem;
+  }
+
   tbody td {
     padding: 0.75rem 0.5rem;
     font-size: 0.82rem;
+  }
+
+  .sort-button {
+    gap: 0.3rem;
+    padding: 0.75rem 0.4rem 0.75rem 0.3rem;
+    font-size: 0.76rem;
+    letter-spacing: 0.04em;
   }
 
   table {
@@ -266,21 +363,21 @@ tbody tr:hover {
 
   thead th:nth-child(1),
   tbody td:nth-child(1) {
-    width: 30%;
+    width: 29%;
   }
 
   thead th:nth-child(2),
   tbody td:nth-child(2) {
-    width: 28%;
+    width: 27%;
   }
 
   thead th:nth-child(3),
   tbody td:nth-child(3) {
-    width: 24%;
+    width: 28%;
   }
 
   thead th:nth-child(4),
   tbody td:nth-child(4) {
-    width: 18%;
+    width: 16%;
   }
 }
